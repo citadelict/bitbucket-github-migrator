@@ -37,16 +37,16 @@ It handles pagination, rate limit retries, and properly duplicates the source re
 
 ## Obtaining Credentials
 
-### 1. Bitbucket App Password
-You cannot use your normal Bitbucket login password. You must generate an App Password.
-1. Log in to Bitbucket.
-2. Click your profile avatar in the bottom left -> **Personal Settings**.
-3. Under Access Management, click **App passwords**.
-4. Click **Create app password**.
-5. Give it a label (e.g., `github-migration`).
-6. Grant it the following permissions:
+### 1. Bitbucket API Token
+Bitbucket has deprecated App Passwords in favor of API tokens. You must generate an API token from your Atlassian account.
+1. Go to [https://id.atlassian.com/manage-profile/security/api-tokens](https://id.atlassian.com/manage-profile/security/api-tokens).
+2. Click **Create API token**.
+3. Give it a label (e.g., `github-migration`) and set an expiry date.
+4. Select **Bitbucket** as the application.
+5. Grant the following permissions:
    - **Repositories:** `Read`
-7. Copy the generated password instantly and paste it as `BITBUCKET_APP_PASSWORD` in your `.env`.
+6. Copy the generated token immediately and paste it as `BITBUCKET_API_TOKEN` in your `.env`.
+7. Set `BITBUCKET_EMAIL` in your `.env` to the **email address** of your Atlassian account (not your Bitbucket username).
 
 ### 2. GitHub Personal Access Token (PAT)
 Both **classic** and **fine-grained** tokens are supported (the script uses `Bearer` auth).

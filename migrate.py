@@ -15,8 +15,8 @@ load_dotenv()
 
 # Configuration
 BITBUCKET_WORKSPACE = os.getenv("BITBUCKET_WORKSPACE")
-BITBUCKET_USERNAME = os.getenv("BITBUCKET_USERNAME")
-BITBUCKET_APP_PASSWORD = os.getenv("BITBUCKET_APP_PASSWORD")
+BITBUCKET_EMAIL = os.getenv("BITBUCKET_EMAIL")
+BITBUCKET_API_TOKEN = os.getenv("BITBUCKET_API_TOKEN")
 GITHUB_ORG = os.getenv("GITHUB_ORG")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 MAX_WORKERS = int(os.getenv("MAX_WORKERS", "5"))
@@ -61,8 +61,8 @@ def validate_config():
     """Validate that all required environment variables are set."""
     required = {
         "BITBUCKET_WORKSPACE": BITBUCKET_WORKSPACE,
-        "BITBUCKET_USERNAME": BITBUCKET_USERNAME,
-        "BITBUCKET_APP_PASSWORD": BITBUCKET_APP_PASSWORD,
+        "BITBUCKET_EMAIL": BITBUCKET_EMAIL,
+        "BITBUCKET_API_TOKEN": BITBUCKET_API_TOKEN,
         "GITHUB_ORG": GITHUB_ORG,
         "GITHUB_TOKEN": GITHUB_TOKEN,
     }
@@ -107,7 +107,7 @@ def get_bitbucket_repos():
     logger.info(f"Fetching repositories from Bitbucket workspace: {BITBUCKET_WORKSPACE}")
     repos = []
     url = f"{BB_API_BASE}/repositories/{BITBUCKET_WORKSPACE}"
-    auth = (BITBUCKET_USERNAME, BITBUCKET_APP_PASSWORD)
+    auth = (BITBUCKET_EMAIL, BITBUCKET_API_TOKEN)
     
     while url:
         response = retry_request(requests.get, url, auth=auth)
@@ -236,7 +236,7 @@ def migrate_repo(repo, github_repos, empty_repos, retry_failed=False):
             gh_clone_url = f"https://github.com/{GITHUB_ORG}/{repo_name}.git"
         
         # Construct auth URLs securely (these won't be printed to logs)
-        bb_auth_url = f"https://{quote_plus(BITBUCKET_USERNAME)}:{quote_plus(BITBUCKET_APP_PASSWORD)}@bitbucket.org/{BITBUCKET_WORKSPACE}/{repo_name}.git"
+        bb_auth_url = f"https://{quote_plus(BITBUCKET_EMAIL)}:{quote_plus(BITBUCKET_API_TOKEN)}@bitbucket.org/{BITBUCKET_WORKSPACE}/{repo_name}.git"
         gh_auth_url = gh_clone_url.replace("https://", f"https://{quote_plus(GITHUB_TOKEN)}@")
         
         # 2. Clone from BB (--mirror preserves ALL commit history, branches, tags)
