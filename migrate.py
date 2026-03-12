@@ -16,6 +16,7 @@ load_dotenv()
 # Configuration
 BITBUCKET_WORKSPACE = os.getenv("BITBUCKET_WORKSPACE")
 BITBUCKET_EMAIL = os.getenv("BITBUCKET_EMAIL")
+BITBUCKET_USERNAME = os.getenv("BITBUCKET_USERNAME")
 BITBUCKET_API_TOKEN = os.getenv("BITBUCKET_API_TOKEN")
 GITHUB_ORG = os.getenv("GITHUB_ORG")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
@@ -67,6 +68,7 @@ def validate_config():
     required = {
         "BITBUCKET_WORKSPACE": BITBUCKET_WORKSPACE,
         "BITBUCKET_EMAIL": BITBUCKET_EMAIL,
+        "BITBUCKET_USERNAME": BITBUCKET_USERNAME,
         "BITBUCKET_API_TOKEN": BITBUCKET_API_TOKEN,
         "GITHUB_ORG": GITHUB_ORG,
         "GITHUB_TOKEN": GITHUB_TOKEN,
@@ -241,7 +243,7 @@ def migrate_repo(repo, github_repos, empty_repos, retry_failed=False):
             gh_clone_url = f"https://github.com/{GITHUB_ORG}/{repo_name}.git"
         
         # Construct auth URLs securely (these won't be printed to logs)
-        bb_auth_url = f"https://{quote_plus(BITBUCKET_EMAIL)}:{quote_plus(BITBUCKET_API_TOKEN)}@bitbucket.org/{BITBUCKET_WORKSPACE}/{repo_name}.git"
+        bb_auth_url = f"https://{quote_plus(BITBUCKET_USERNAME)}:{quote_plus(BITBUCKET_API_TOKEN)}@bitbucket.org/{BITBUCKET_WORKSPACE}/{repo_name}.git"
         gh_auth_url = gh_clone_url.replace("https://", f"https://{quote_plus(GITHUB_TOKEN)}@")
         
         # 2. Clone from BB (--mirror preserves ALL commit history, branches, tags)
