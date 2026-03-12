@@ -54,6 +54,11 @@ def parse_args():
         action="store_true",
         help="Re-attempt migration for repos that exist on GitHub but are empty (orphaned from a previous failed push)."
     )
+    parser.add_argument(
+        "--repo",
+        type=str,
+        help="Specify a single repository slug to migrate (useful for testing)."
+    )
     return parser.parse_args()
 
 
@@ -284,6 +289,14 @@ def main():
     
     try:
         bb_repos = get_bitbucket_repos()
+        
+        if args.repo:
+            bb_repos = [r for r in bb_repos if r["slug"].lower() == args.repo.lower()]
+            if not bb_repos:
+                logger.error(f"Repository '{args.repo}' not found in Bitbucket workspace '{BITBUCKET_WORKSPACE}'.")
+                return
+            logger.info(f"Filtering to single repository: {args.repo}")
+            
         gh_repos, empty_repos = get_github_repos(include_empty=args.retry_failed)
         
         # --- DRY RUN MODE ---
