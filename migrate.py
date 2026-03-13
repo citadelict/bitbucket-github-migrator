@@ -60,6 +60,11 @@ def parse_args():
         type=str,
         help="Specify a single repository slug to migrate (useful for testing)."
     )
+    parser.add_argument(
+        "--delete-from-github",
+        action="store_true",
+        help="DANGER: Delete repos from GitHub that match the Bitbucket workspace. Useful to restart a migration from scratch."
+    )
     return parser.parse_args()
 
 
@@ -193,9 +198,9 @@ def delete_github_repo(repo_name):
     url = f"{GH_API_BASE}/repos/{GITHUB_ORG}/{repo_name}"
     try:
         retry_request(requests.delete, url, headers=GH_HEADERS)
-        logger.info(f"[{repo_name}] Cleaned up orphaned GitHub repo after push failure.")
+        logger.info(f"[{repo_name}] Deleted GitHub repo successfully.")
     except Exception as e:
-        logger.warning(f"[{repo_name}] Failed to delete orphaned repo: {e}. Manual cleanup required.")
+        logger.warning(f"[{repo_name}] Failed to delete repo: {e}. Manual cleanup required.")
 
 
 def run_git_command(command, cwd=None):
@@ -338,8 +343,39 @@ def main():
                 print("\nRepositories to skip:")
                 for r in to_skip:
                     print(f"  - {r}")
+            
+            if args.delete_from_github:
+                to_delete = [r["slug"] for r in bb_repos if r["slug"].lower() in gh_repos]
+                print("\n" + "!"*60)
+                print(f"DANGER: Would DELETE {len(to_delete)} matching repositories from GitHub!")
+                print("!"*60)
+                for r in to_delete:
+                    print(f"  x {r}")
             return
-        
+            
+        # --- DELETE FROM GITHUB MODE ---
+        if args.delete_from_github:
+            to_delete = [r["slug"] for r in bb_repos if r["slug"].lower() in gh_repos]
+            
+            if not to_delete:
+                logger.info("No matching repositories found on GitHub to delete.")
+                return
+                
+            print("\n" + "!"*60)
+            print(f"DANGER: You are about to DELETE {len(to_delete)} repositories from the GitHub org '{GITHUB_ORG}'.")
+            print("!"*60)
+            confirm = input("Type 'DELETE' to confirm: ")
+            if confirm != "DELETE":
+                print("Aborted.")
+                return
+                
+            logger.info("Deleting repositories from GitHub...")
+            for repo_name in to_delete:
+                delete_github_repo(repo_name)
+            
+            print("\nDeletion complete.")
+            return
+
         # --- LIVE MIGRATION ---
         results = {"success": [], "skipped": [], "failed": []}
         
