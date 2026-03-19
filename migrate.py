@@ -180,9 +180,14 @@ def get_github_repos(include_empty=False):
 def create_github_repo(repo_data):
     """Creates an empty repository on GitHub with matching metadata."""
     url = f"{GH_API_BASE}/orgs/{GITHUB_ORG}/repos"
+    # GitHub limits repository descriptions to 350 characters
+    description = repo_data["description"] or ""
+    if len(description) > 350:
+        description = description[:347] + "..."
+        
     payload = {
         "name": repo_data["slug"],
-        "description": repo_data["description"] or "",
+        "description": description,
         "private": repo_data["is_private"],
         "has_issues": True,
         "has_projects": False,  # Classic Projects is being phased out by GitHub
