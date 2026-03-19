@@ -275,7 +275,10 @@ def migrate_repo(repo, github_repos, empty_repos, retry_failed=False):
         return "success", repo_name
         
     except Exception as e:
-        logger.error(f"[{repo_name}] FAILED with exception: {str(e)}")
+        error_msg = str(e)
+        if hasattr(e, 'response') and e.response is not None:
+            error_msg += f"\nResponse body: {e.response.text}"
+        logger.error(f"[{repo_name}] FAILED with exception: {error_msg}")
         # Clean up orphaned GitHub repo if we just created it
         if created_new_repo:
             delete_github_repo(repo_name)
